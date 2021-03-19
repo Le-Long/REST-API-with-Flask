@@ -18,7 +18,7 @@ Then use the package manager [pip](https://pip.pypa.io/en/stable/) to install re
 pip install -r requirements.txt
 ```
 
-You need to change the SQLALCHEMY_DATABASE_URI in file config.production.py to your database URI.
+You need to change the SQLALCHEMY_DATABASE_URI in file config/production.py to your database URI.
 
 ## Running
 
