@@ -1,0 +1,7 @@
+.pytest_cache/
+.coverage
+.idea/
+__pycache__/
+kiot.db
+kiot.log
+venv/
