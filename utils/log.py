@@ -13,7 +13,22 @@ logging.basicConfig(filename="kiot.log", filemode="a",
 
 
 def get_log(func, api, msg='', trace=''):
-    """ Get method and IP of an api call """
+    """
+    Get method and IP of an api call.
+
+    Arguments:
+    func: function
+        the function need to be logged
+    api: string
+        the endpoint name that the function process
+    msg: string
+        the error message (default '')
+    trace: string
+        the trace of the error code (default '')
+
+    Return: dictionary
+        contains ip, method, api_name, trace ans message
+    """
     k = func.__name__
     method = k
 
@@ -32,16 +47,24 @@ def get_log(func, api, msg='', trace=''):
 
 
 def log_and_capture(endpoint, code=400):
-    """ A decorator used with any api calls for logging """
+    """
+    A decorator used with any api calls for logging into a file
+
+    Arguments:
+    endpoint: string
+        the name of the logged endpoint
+    code: int
+        code for return when meet error
+    """
     def inner(f):
         @wraps(f)
         def decorator(*args, **kwargs):
             try:
-                """ If everything alright, we do not need traceback """
+                # If everything alright, we do not need traceback
                 result = f(*args, **kwargs)
                 log_obj = get_log(f, endpoint)
             except Exception as e:
-                """ If there is an error, we need its msg and traceback """
+                # If there is an error, we need its msg and traceback
                 msg = str(e)
                 result = {"error": msg}, code
                 trace = traceback.format_exc()
