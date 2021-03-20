@@ -17,10 +17,10 @@ def router():
 
 if app.config["ENV"] == "prod":
     app.config.from_object("config.production.ProductionConfig")
-elif app.config["ENV"] == "dev":
-    app.config.from_object("config.development.DevelopmentConfig")
-else:
+elif app.config["ENV"] == "test":
     app.config.from_object("config.testing.TestingConfig")
+else:
+    app.config.from_object("config.development.DevelopmentConfig")
 
 engine = create_engine(app.config["SQLALCHEMY_DATABASE_URI"])
 Session = sessionmaker(bind=engine)
