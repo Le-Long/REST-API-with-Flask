@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from app import Base, Session
 
@@ -13,13 +14,13 @@ class UserModel(Base):
 
     id = Column(Integer, primary_key=True)
     username = Column(String(20), unique=True)
-    password = Column(String(20))
+    password = Column(String(200))
 
     item = relationship('ItemModel')
 
     def __init__(self, username, password):
         self.username = username
-        self.password = password
+        self.password = generate_password_hash(password)
 
     def save_to_db(self):
         session.add(self)
@@ -38,3 +39,6 @@ class UserModel(Base):
     @classmethod
     def find_by_id(cls, _id):
         return session.query(cls).get(_id)
+
+    def verify_password(self, pwd):
+        return check_password_hash(self.password, pwd)

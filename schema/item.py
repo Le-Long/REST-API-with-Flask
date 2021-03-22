@@ -19,8 +19,10 @@ class GetItemListSchema(Schema):
     @post_load()
     def validate_page(self, data, **kwargs):
         # Custom validation to ensure page number is positive
-        if data['page'] < 1:
+        if data["page"] < 1:
             raise ValidationError("The page number has to be positive.")
+        if data["per_page"] < 1:
+            raise ValidationError("The number of items per page has to be positive.")
         return data
 
 

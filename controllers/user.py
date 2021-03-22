@@ -29,9 +29,9 @@ def post():
     """
 
     # Validate information on the request body
-    info = request.json
+    param = request.json
     try:
-        data = auth_schema.load(info)
+        data = auth_schema.load(param)
     except ValidationError as e:
         return str(e.messages), 400
     if data["username"] == "" or data["password"] == "":
@@ -63,15 +63,15 @@ def post():
     """
 
     # Validate information on the request body
-    info = request.json
+    param = request.json
     try:
-        data = auth_schema.load(info)
+        data = auth_schema.load(param)
     except ValidationError as e:
         return str(e.messages), 400
 
     # Return an access token with the user id and the time the token was created so that we can distinguish them
     user = UserModel.find_by_username(data["username"])
-    if user and (user.password == data["password"]):
+    if user and user.verify_password(data["password"]):
         access_token = jwt.encode({"identity": user.id, "iat": datetime.datetime.utcnow()}, key, algorithm="HS256")
         return {"access_token": access_token}, 200
     return {"msg": "Please register first!"}, 401

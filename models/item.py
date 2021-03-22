@@ -87,4 +87,3 @@ class CategoryModel(Base):
     def save_to_db(self):
         session.add(self)
         session.commit()
-

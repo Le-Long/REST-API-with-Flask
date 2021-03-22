@@ -77,7 +77,7 @@ def delete(id, **token):
             item.delete_from_db()
         except RuntimeError:
             return {"msg": "An error occurred deleting the item."}, 500
-    return {"msg": "Item deleted!"}
+    return {"msg": "Item deleted!"}, 200
 
 
 @item_page.route("/items/<int:id>", methods=["PUT"], endpoint="item_edit")
@@ -114,9 +114,9 @@ def put(id, **token):
 
     # Validate information on the request body
     create_item_schema = ItemInputSchema()
-    info = request.json
+    param = request.json
     try:
-        data = create_item_schema.load(info)
+        data = create_item_schema.load(param)
     except ValidationError as e:
         return str(e.messages), 400
 
@@ -171,10 +171,10 @@ def get():
     """
 
     # Validate information on the query string
-    info = request.args
+    param = request.args
     item_list_schema = GetItemListSchema()
     try:
-        data = item_list_schema.load(info)
+        data = item_list_schema.load(param)
     except ValidationError as e:
         return str(e.messages), 400
 
@@ -182,9 +182,9 @@ def get():
     if data:
         pagination = ItemModel.pagination(data["name"], data["per_page"], data["page"])
         if pagination:
-            return {"items": list(map(lambda x: item_schema.dump(x), pagination))}
-        return {"items": []}
-    return {"items": list(map(lambda x: item_schema.dump(x), ItemModel.query_with_part_of_name("").all()))}
+            return {"items": list(map(lambda x: item_schema.dump(x), pagination))}, 200
+        return {"items": []}, 200
+    return {"items": list(map(lambda x: item_schema.dump(x), ItemModel.query_with_part_of_name("").all()))}, 200
 
 
 @item_page.route("/items", methods=["POST"], endpoint="item_add")
@@ -221,9 +221,9 @@ def post(**token):
 
     # Validate information on the request body
     create_item_schema = ItemInputSchema()
-    info = request.json
+    param = request.json
     try:
-        data = create_item_schema.load(info)
+        data = create_item_schema.load(param)
     except ValidationError as e:
         return str(e.messages), 400
 
