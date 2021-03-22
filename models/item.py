@@ -7,6 +7,8 @@ session = Session()
 
 
 class ItemModel(Base):
+    """ Interface for the items database"""
+
     __tablename__ = 'items'
 
     id = Column(Integer, primary_key=True)
@@ -39,12 +41,12 @@ class ItemModel(Base):
         session.commit()
 
     @classmethod
-    def query_with_prefix(cls, prefix):
-        return session.query(cls).filter(cls.name.contains(prefix))
+    def query_with_part_of_name(cls, name):
+        return session.query(cls).filter(cls.name.contains(name))
 
     @classmethod
-    def pagination(cls, prefix, perpage, page):
-        query = cls.query_with_prefix(prefix)
+    def pagination(cls, name, perpage, page):
+        query = cls.query_with_part_of_name(name)
         start = (page - 1) * perpage  # start is the index of the first object of a page
         if query.count() < start:
             start = 0  # if start is out of range, we set it to 0
@@ -66,6 +68,8 @@ class ItemModel(Base):
 
 
 class CategoryModel(Base):
+    """ Interface for the categories database"""
+
     __tablename__ = 'categories'
 
     id = Column(Integer, primary_key=True)

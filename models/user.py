@@ -7,6 +7,8 @@ session = Session()
 
 
 class UserModel(Base):
+    """ Interface for the users database"""
+
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True)

@@ -38,7 +38,6 @@ def get(id):
     """
 
     item = ItemModel.find_by_id(id)
-    print(item)
     if item:
         return item_schema.dump(item), 200
     return {"msg": "Item not found!"}, 404
@@ -181,10 +180,11 @@ def get():
 
     # Only get one page of items
     if data:
-        pagination = ItemModel.pagination(data["prefix"], data["per_page"], data["page"])
+        pagination = ItemModel.pagination(data["name"], data["per_page"], data["page"])
         if pagination:
             return {"items": list(map(lambda x: item_schema.dump(x), pagination))}
-    return {"items": []}
+        return {"items": []}
+    return {"items": list(map(lambda x: item_schema.dump(x), ItemModel.query_with_part_of_name("").all()))}
 
 
 @item_page.route("/items", methods=["POST"], endpoint="item_add")

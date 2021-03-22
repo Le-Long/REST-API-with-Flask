@@ -12,15 +12,16 @@ class ItemSchema(Schema):
 
 class GetItemListSchema(Schema):
     """ Schema to validate info to get a list of items """
-    prefix = fields.Str(missing="")
+    name = fields.Str(missing="")
     page = fields.Int(missing=1)
     per_page = fields.Int(missing=5)
 
     @post_load()
     def validate_page(self, data, **kwargs):
         # Custom validation to ensure page number is positive
-        if data['page'] <= 1:
+        if data['page'] < 1:
             raise ValidationError("The page number has to be positive.")
+        return data
 
 
 class ItemInputSchema(Schema):

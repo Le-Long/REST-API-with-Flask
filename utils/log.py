@@ -29,6 +29,7 @@ def get_log(func, api, msg='', trace=''):
     Return: dictionary
         contains ip, method, api_name, trace ans message
     """
+
     k = func.__name__
     method = k
 
@@ -56,6 +57,7 @@ def log_and_capture(endpoint, code=400):
     code: int
         code for return when meet error
     """
+
     def inner(f):
         @wraps(f)
         def decorator(*args, **kwargs):
