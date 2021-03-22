@@ -44,7 +44,7 @@ class ItemModel(Base):
 
     @classmethod
     def pagination(cls, prefix, perpage, page):
-        query = cls.find_by_prefix(prefix)
+        query = cls.query_with_prefix(prefix)
         start = (page - 1) * perpage  # start is the index of the first object of a page
         if query.count() < start:
             start = 0  # if start is out of range, we set it to 0
