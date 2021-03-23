@@ -14,13 +14,12 @@ item_page = Blueprint("item_page", __name__)
 
 
 def validate_input(param, schema):
-    """Validate information on the request
-    """
+    """ Validate information on the request """
     schema_obj = schema()
     try:
         data = schema_obj.load(param)
     except ValidationError as e:
-        raise str(e.messages)
+        raise e
     return data
 
 
@@ -74,20 +73,21 @@ def delete(id, **token):
         format {"msg" or the error key: The error message}
     Status code: int
         200 if OK
-        400 if validation error
         403 if user is not the owner
+        404 if item not found
         500 if internal error
     """
     user_identity = token["identity"]
     item = ItemModel.find_by_id(id)
 
+    if not item:
+        return {"msg": "Item not found!"}, 404
     if item.user_id != user_identity:
         return {"msg": "You need to be the owner!"}, 403
-    if item:
-        try:
-            item.delete_from_db()
-        except exc.ConcurrentModificationError:
-            return {"msg": "An error occurred deleting the item."}, 500
+    try:
+        item.delete_from_db()
+    except exc.ConcurrentModificationError:
+        return {"msg": "An error occurred deleting the item."}, 500
     return {"msg": "Item deleted!"}, 200
 
 
@@ -183,7 +183,9 @@ def get():
         if pagination:
             return {"items": list(map(lambda x: item_schema.dump(x), pagination))}, 200
         return {"items": []}, 200
-    return {"items": list(map(lambda x: item_schema.dump(x), ItemModel.query_with_part_of_name("").all()))}, 200
+    return {"items": list(map(lambda x: item_schema.dump(x),
+                              ItemModel.query_with_part_of_name("").all())
+                          )}, 200
 
 
 @item_page.route("/items", methods=["POST"], endpoint="item_add")

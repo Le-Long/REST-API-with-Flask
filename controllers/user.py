@@ -14,13 +14,12 @@ user_page = Blueprint("user_page", __name__)
 
 
 def validate_input():
-    """Validate user's information on the request body
-    """
+    """ Validate user's information on the request body """
     auth_schema = ValidateUserInputSchema()
     try:
         data = auth_schema.load(request.json)
     except ValidationError as e:
-        raise str(e.messages)
+        raise e
     return data
 
 

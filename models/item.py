@@ -7,8 +7,7 @@ session = Session()
 
 
 class ItemModel(Base):
-    """Interface for the items database
-    """
+    """ Interface for the items database """
 
     __tablename__ = "items"
 
@@ -69,8 +68,7 @@ class ItemModel(Base):
 
 
 class CategoryModel(Base):
-    """Interface for the categories database
-    """
+    """ Interface for the categories database """
 
     __tablename__ = "categories"
 

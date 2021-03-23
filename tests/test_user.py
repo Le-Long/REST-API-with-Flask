@@ -20,8 +20,7 @@ def register(client, username, password):
 
 
 def test_login_success(client):
-    """Make sure login works
-    """
+    """ Make sure login works """
     rv = login(client, "admin", "12345")
     data = rv.get_json()
     token = data["access_token"]
@@ -31,15 +30,13 @@ def test_login_success(client):
 
 
 def test_login_no_account_failure(client):
-    """Make sure login only works with existing account
-    """
+    """ Make sure login only works with existing account """
     rv = login(client, "wrongname", "12345")
     assert b"Please register first!" in rv.data
 
 
 def test_logout_success(client):
-    """Make sure logout works
-    """
+    """ Make sure logout works """
     rv = login(client, "admin", "12345")
     data = rv.get_json()
     token = data["access_token"]
@@ -55,30 +52,26 @@ def test_logout_success(client):
 
 
 def test_logout_not_yet_log_in_failure(client):
-    """Make sure user who logout need to login first
-    """
+    """ Make sure user who logout need to login first """
     rv = client.post("/logout")
     assert b"Missing Authorization header!" in rv.data
 
 
 def test_signup_success(client):
-    """Make sure register works
-    """
+    """ Make sure register works """
     rv = register(client, "tester", "password")
     assert b"User created successfully." in rv.data
 
 
 def test_signup_username_exists_failure(client):
-    """Make sure register only works with new username
-    """
+    """ Make sure register only works with new username """
     register(client, "tester", "password")
     rv = register(client, "tester", "12345")
     assert b"An user with that username already exists." in rv.data
 
 
 def test_signup_info_not_fill_failure(client):
-    """Make sure register can't create an user without username or password
-    """
+    """ Make sure register can't create an user without username or password """
     rv = register(client, "", "12345")
     assert b"Please fill both username and password." in rv.data
 

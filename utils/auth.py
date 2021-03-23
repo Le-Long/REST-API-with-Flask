@@ -4,8 +4,9 @@ from flask import request
 import jwt
 
 from utils.block import BLOCKLIST
+from config import Config
 
-key = "4w5herd"
+key = Config.SECRET_KEY
 
 
 def check_if_token_in_blocklist(jwt_payload):
@@ -40,16 +41,17 @@ def jwt_required(f):
     def wrapper(*args, **kwargs):
         # Check if client has logged in or not
         if "Authorization" in request.headers:
-            token = request.headers["Authorization"][7:]  # First 7 character is the Authentication type
+            # First 7 character is the Authentication type
+            token = request.headers["Authorization"][7:]
         else:
-            return {"msg": "Missing Authorization header!"}, 401
+            return {"msg": "You need to log in first!"}, 401
 
         try:
             data = jwt.decode(token, key, algorithms="HS256")
             # Check if user has logged out or not
             if not check_if_token_in_blocklist(data):
                 return f(*args, **kwargs, **data)
-            return {"msg": "Token has been revoked!"}, 401
+            return {"msg": "You has already logged out!"}, 401
         except jwt.exceptions.InvalidTokenError as e:
             return {"msg": str(e)}, 400
     return wrapper

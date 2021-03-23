@@ -5,12 +5,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
+
 app = Flask(__name__)
 
 
 def router():
-    """Add URL from blueprints to application
-    """
+    """ Add URL from blueprints to application """
     from controllers.user import user_page
     from controllers.item import item_page
 
@@ -35,12 +35,11 @@ Base = declarative_base()
 
 @app.before_first_request
 def create_db():
-    """
-    Create all tables first
-    """
+    """ Create all tables first """
     Base.metadata.create_all(engine)
 
 
 if __name__ == "__main__":
+
     router()
     app.run(port=5000)
