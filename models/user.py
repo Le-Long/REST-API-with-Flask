@@ -8,15 +8,16 @@ session = Session()
 
 
 class UserModel(Base):
-    """ Interface for the users database"""
+    """Interface for the users database
+    """
 
-    __tablename__ = 'users'
+    __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
     username = Column(String(20), unique=True)
     password = Column(String(200))
 
-    item = relationship('ItemModel')
+    item = relationship("ItemModel")
 
     def __init__(self, username, password):
         self.username = username
@@ -24,13 +25,19 @@ class UserModel(Base):
 
     def save_to_db(self):
         session.add(self)
-        session.commit()
+        try:
+            session.commit()
+        except:
+            session.rollback()
 
     @classmethod
     def clear_db(cls):
         for user in session.query(cls).all():
             session.delete(user)
-        session.commit()
+        try:
+            session.commit()
+        except:
+            session.rollback()
 
     @classmethod
     def find_by_username(cls, username):

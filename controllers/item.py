@@ -1,21 +1,33 @@
 from flask import request, Blueprint
-from marshmallow import ValidationError
+from sqlalchemy.orm import exc
+from marshmallow.exceptions import ValidationError
 
 from models.item import ItemModel, CategoryModel
 from schema.item import ItemSchema, ItemInputSchema, GetItemListSchema
 from utils.log import log_and_capture
 from utils.auth import jwt_required
 
-"""Schema used to return a json representation of an item object """
+# Schema used to return a json representation of an item object
 item_schema = ItemSchema()
+
 item_page = Blueprint("item_page", __name__)
+
+
+def validate_input(param, schema):
+    """Validate information on the request
+    """
+    schema_obj = schema()
+    try:
+        data = schema_obj.load(param)
+    except ValidationError as e:
+        raise str(e.messages)
+    return data
 
 
 @item_page.route("/items/<int:id>", methods=["GET"], endpoint="item_detail")
 @log_and_capture(endpoint="item_detail")
 def get(id):
-    """
-    Handles the request of getting an item
+    """Handles the request of getting an item
 
     Arguments:
     id: int
@@ -28,7 +40,7 @@ def get(id):
                 “name”: str,
                 “price”:float,
                 “category_id”:int,
-                “user_id”:int
+                "user_id”:int
                 }
     Message if error: dictionary
         format {"msg": "Item not found!"}
@@ -47,8 +59,7 @@ def get(id):
 @log_and_capture(endpoint="item_delete")
 @jwt_required
 def delete(id, **token):
-    """
-    Handles the request of deleting an item from its owner
+    """Handles the request of deleting an item from its owner
 
     Arguments:
     id: int
@@ -75,7 +86,7 @@ def delete(id, **token):
     if item:
         try:
             item.delete_from_db()
-        except RuntimeError:
+        except exc.ConcurrentModificationError:
             return {"msg": "An error occurred deleting the item."}, 500
     return {"msg": "Item deleted!"}, 200
 
@@ -84,8 +95,7 @@ def delete(id, **token):
 @log_and_capture(endpoint="item_edit")
 @jwt_required
 def put(id, **token):
-    """
-    Handles the request of updating an item from its owner
+    """Handles the request of updating an item from its owner
 
     If the item has a new category we create that category too.
 
@@ -113,12 +123,7 @@ def put(id, **token):
     item = ItemModel.find_by_id(id)
 
     # Validate information on the request body
-    create_item_schema = ItemInputSchema()
-    param = request.json
-    try:
-        data = create_item_schema.load(param)
-    except ValidationError as e:
-        return str(e.messages), 400
+    data = validate_input(request.json, ItemInputSchema)
 
     # Create a new category if necessary for the item
     category = CategoryModel.find_by_name(data["category"])
@@ -136,7 +141,7 @@ def put(id, **token):
             return {"msg": "You need to be the owner!"}, 403
         try:
             item.update_to_db(**data)
-        except RuntimeError:
+        except exc.ConcurrentModificationError:
             return {"msg": "An error occurred updating the item!"}, 500
     else:
         return {"msg": "Item not found!"}, 404
@@ -146,8 +151,7 @@ def put(id, **token):
 @item_page.route("/items", methods=["GET"], endpoint="item_list")
 @log_and_capture(endpoint="item_list")
 def get():
-    """
-    Handles the request of getting a list of items
+    """Handles the request of getting a list of items
 
     Arguments:
     id: int
@@ -171,12 +175,7 @@ def get():
     """
 
     # Validate information on the query string
-    param = request.args
-    item_list_schema = GetItemListSchema()
-    try:
-        data = item_list_schema.load(param)
-    except ValidationError as e:
-        return str(e.messages), 400
+    data = validate_input(request.args, GetItemListSchema)
 
     # Only get one page of items
     if data:
@@ -188,11 +187,10 @@ def get():
 
 
 @item_page.route("/items", methods=["POST"], endpoint="item_add")
-@jwt_required
 @log_and_capture(endpoint="item_add")
+@jwt_required
 def post(**token):
-    """
-    Handle the request of creating a new item
+    """Handle the request of creating a new item
 
     If the new item has a new category we create that category too.
 
@@ -220,12 +218,7 @@ def post(**token):
     user_id = token["identity"]
 
     # Validate information on the request body
-    create_item_schema = ItemInputSchema()
-    param = request.json
-    try:
-        data = create_item_schema.load(param)
-    except ValidationError as e:
-        return str(e.messages), 400
+    data = validate_input(request.json, ItemInputSchema)
 
     # Create a new category if necessary for the new item
     category = CategoryModel.find_by_name(data["category"])
@@ -233,7 +226,7 @@ def post(**token):
         try:
             category = CategoryModel(data["category"])
             category.save_to_db()
-        except RuntimeError:
+        except exc.ConcurrentModificationError:
             return {"msg": "An error occurred creating the category!"}, 500
     data["category"] = category.id
 
@@ -241,6 +234,6 @@ def post(**token):
     item = ItemModel(**data, user=user_id)
     try:
         item.save_to_db()
-    except RuntimeError:
+    except exc.ConcurrentModificationError:
         return {"msg": "An error occurred creating the item!"}, 500
     return item_schema.dump(item), 201

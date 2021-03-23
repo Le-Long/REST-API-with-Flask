@@ -13,10 +13,10 @@ logging.basicConfig(filename="kiot.log", filemode="a",
 
 
 def get_log(func, api, msg='', trace=''):
-    """
-    Get method and IP of an api call.
+    """Get method and IP of an api call.
 
-    Arguments:
+    Parameters
+    ----------
     func: function
         the function need to be logged
     api: string
@@ -26,7 +26,9 @@ def get_log(func, api, msg='', trace=''):
     trace: string
         the trace of the error code (default '')
 
-    Return: dictionary
+    Returns
+    -------
+    dictionary
         contains ip, method, api_name, trace ans message
     """
 
@@ -48,10 +50,10 @@ def get_log(func, api, msg='', trace=''):
 
 
 def log_and_capture(endpoint, code=400):
-    """
-    A decorator used with any api calls for logging into a file
+    """A decorator used with any api calls for logging into a file
 
-    Arguments:
+    Parameters
+    ----------
     endpoint: string
         the name of the logged endpoint
     code: int

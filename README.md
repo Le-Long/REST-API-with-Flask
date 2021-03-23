@@ -1,6 +1,6 @@
 # KIOT
 
-KIOT is a simple web backend application for managing items within a store. It was created with Python 3.8.2 and designed to be used for MySQL 8.0.23. 
+KIOT is a simple backend web application for managing items within a store. It was created with Python 3.8.2 and designed to be used for MySQL 8.0.23. 
 For the design document, see [kiot](https://docs.google.com/document/d/1BMIo-5bP3tBAaxDvO35saMD16hnC48Oa0x8YlFEudhE/edit?usp=sharing).
 
 <!-- GETTING STARTED -->
@@ -20,8 +20,8 @@ Then use the package manager [pip](https://pip.pypa.io/en/stable/) to install re
 pip install -r requirements.txt
 ```
 
-You need to change the SQLALCHEMY_DATABASE_URI in file config/production.py to your database URI,
-and then create a database named "kiot" for the project.
+You need to change the SQLALCHEMY_DATABASE_URI to your database URI in one of the file in directory config,
+depends on which environment you use. Then run MySQL and create a database named "kiot" for the project.
 
 <!-- USAGE -->
 ## Running
@@ -35,10 +35,9 @@ The server will start on http://127.0.0.1:5000
 
 ## Testing
 
-Change directory to the project and then you can test it with pytest
+Change directory to the project and then you can test it
 
 ```bash
-pip install pytest
 pytest
 ```
 <!-- LICENSE -->

@@ -1,6 +1,6 @@
 import functools
 
-from flask import jsonify, request
+from flask import request
 import jwt
 
 from utils.block import BLOCKLIST
@@ -9,16 +9,17 @@ key = "4w5herd"
 
 
 def check_if_token_in_blocklist(jwt_payload):
-    """
-    Check if a user has already logged out or not
+    """Check if a user has already logged out or not
 
     If the user has already logged out, the token will be recorded in a block list.
 
-    Arguments:
+    Parameters
+    ----------
     jwt_payload: dictionary
-        the body of the token that contains an unique field for that token
+        the body of the token that contains a unique field for that token
 
-    Return:
+    Returns
+    -------
     blocked: boolean
         whether a user has already logged out or not
     """
@@ -27,11 +28,11 @@ def check_if_token_in_blocklist(jwt_payload):
 
 
 def jwt_required(f):
-    """
-    A decorator used to validate JWT
+    """A decorator used to validate JWT
 
-    Arguments:
-    f: function
+    Returns
+    -------
+    function
         the function that requires jwt
     """
 
@@ -41,14 +42,14 @@ def jwt_required(f):
         if "Authorization" in request.headers:
             token = request.headers["Authorization"][7:]  # First 7 character is the Authentication type
         else:
-            return jsonify({"msg": "Missing Authorization header!"})
+            return {"msg": "Missing Authorization header!"}, 401
 
         try:
             data = jwt.decode(token, key, algorithms="HS256")
             # Check if user has logged out or not
             if not check_if_token_in_blocklist(data):
                 return f(*args, **kwargs, **data)
-            return jsonify({"msg": "Token has been revoked!"})
+            return {"msg": "Token has been revoked!"}, 401
         except jwt.exceptions.InvalidTokenError as e:
-            return jsonify({"msg": str(e)})
+            return {"msg": str(e)}, 400
     return wrapper

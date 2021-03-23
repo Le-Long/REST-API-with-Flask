@@ -4,21 +4,30 @@ from flask import request, Blueprint
 from marshmallow import ValidationError
 import jwt
 
-from schema.user import CreateUserInputSchema
+from schema.user import ValidateUserInputSchema
 from utils.log import log_and_capture
 from utils.block import BLOCKLIST
 from utils.auth import key, jwt_required
 from models.user import UserModel
 
-auth_schema = CreateUserInputSchema()
 user_page = Blueprint("user_page", __name__)
+
+
+def validate_input():
+    """Validate user's information on the request body
+    """
+    auth_schema = ValidateUserInputSchema()
+    try:
+        data = auth_schema.load(request.json)
+    except ValidationError as e:
+        raise str(e.messages)
+    return data
 
 
 @user_page.route("/register", methods=["POST"], endpoint="sign_up")
 @log_and_capture(endpoint="sign_up")
 def post():
-    """
-    Handle the request of signing up
+    """Handle the request of signing up
 
     Return:
     Message: dictionary
@@ -28,12 +37,8 @@ def post():
         200 if OK
     """
 
-    # Validate information on the request body
-    param = request.json
-    try:
-        data = auth_schema.load(param)
-    except ValidationError as e:
-        return str(e.messages), 400
+    # Validate information of the new user
+    data = validate_input()
     if data["username"] == "" or data["password"] == "":
         return {"msg": "Please fill both username and password."}, 400
     if UserModel.find_by_username(data["username"]):
@@ -48,8 +53,7 @@ def post():
 @user_page.route("/login", methods=["POST"], endpoint="sign_in")
 @log_and_capture(endpoint="sign_in")
 def post():
-    """
-    Handle the request of signing in
+    """Handle the request of signing in
 
     Return:
     Access token if success: dictionary
@@ -62,12 +66,7 @@ def post():
         200 if OK
     """
 
-    # Validate information on the request body
-    param = request.json
-    try:
-        data = auth_schema.load(param)
-    except ValidationError as e:
-        return str(e.messages), 400
+    data = validate_input()
 
     # Return an access token with the user id and the time the token was created so that we can distinguish them
     user = UserModel.find_by_username(data["username"])
@@ -81,8 +80,7 @@ def post():
 @log_and_capture(endpoint="sign_out")
 @jwt_required
 def post(**token):
-    """
-    Handle the request of signing up
+    """Handle the request of signing up
 
     Arguments:
     Token: dictionary

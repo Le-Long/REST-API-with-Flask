@@ -7,18 +7,19 @@ session = Session()
 
 
 class ItemModel(Base):
-    """ Interface for the items database"""
+    """Interface for the items database
+    """
 
-    __tablename__ = 'items'
+    __tablename__ = "items"
 
     id = Column(Integer, primary_key=True)
     name = Column(String(80))
     price = Column(Float)
-    category_id = Column(Integer, ForeignKey('categories.id'))
-    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
+    category_id = Column(Integer, ForeignKey("categories.id", ondelete="SET NULL"))
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"))
 
-    category = relationship('CategoryModel')
-    user = relationship('UserModel')
+    category = relationship("CategoryModel")
+    user = relationship("UserModel")
 
     def __init__(self, name, price, category, user):
         self.name = name
@@ -68,14 +69,15 @@ class ItemModel(Base):
 
 
 class CategoryModel(Base):
-    """ Interface for the categories database"""
+    """Interface for the categories database
+    """
 
-    __tablename__ = 'categories'
+    __tablename__ = "categories"
 
     id = Column(Integer, primary_key=True)
     name = Column(String(80))
 
-    items = relationship('ItemModel')
+    items = relationship("ItemModel")
 
     def __init__(self, name):
         self.name = name
