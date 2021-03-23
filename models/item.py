@@ -8,7 +8,7 @@ session = Session()
 
 
 class ItemModel(Base):
-    """ Interface for the items database """
+    """Interface for the items database"""
 
     __tablename__ = "items"
 
@@ -91,7 +91,7 @@ class ItemModel(Base):
 
 
 class CategoryModel(Base):
-    """ Interface for the categories database """
+    """Interface for the categories database"""
 
     __tablename__ = "categories"
 
@@ -110,6 +110,9 @@ class CategoryModel(Base):
     @classmethod
     def find_by_id(cls, _id):
         return session.query(cls).get(_id)
+
+    def jsonify(self):
+        return {"id": self.id, "name": self.name}
 
     def save_to_db(self):
         try:

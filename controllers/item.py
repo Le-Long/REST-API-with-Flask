@@ -1,5 +1,4 @@
 from flask import request, Blueprint
-from marshmallow.exceptions import ValidationError
 
 from models.item import ItemModel, CategoryModel
 from schema.item import ItemSchema, ItemInputSchema, GetItemListSchema
@@ -13,12 +12,9 @@ item_page = Blueprint("item_page", __name__)
 
 
 def validate_input(param, schema):
-    """ Validate information on the request """
+    """Validate information on the request"""
     schema_obj = schema()
-    try:
-        data = schema_obj.load(param)
-    except ValidationError as e:
-        raise e
+    data = schema_obj.load(param)
     return data
 
 
@@ -74,7 +70,6 @@ def delete(id, **token):
         200 if OK
         403 if user is not the owner
         404 if item not found
-        500 if internal error
     """
     user_identity = token["identity"]
     item = ItemModel.find_by_id(id)
@@ -108,10 +103,8 @@ def put(id, **token):
         format {"msg" or the error key: The error message}
     Status code: int
         200 if OK
-        400 if validation error
         403 if user is not the owner
         404 if item not found
-        500 if internal error
     """
 
     # Get the id of the request sender from JWT
@@ -163,7 +156,6 @@ def get():
         format {the error key: The error message}
     Status code: int
         200 if OK
-        400 if error
     """
 
     # Validate information on the query string
@@ -204,9 +196,7 @@ def post(**token):
     Message if error: dictionary
         format {the error key: The error message}
     Status code: int
-        200 if OK
-        400 if validation error
-        500 if internal error
+        201 if OK
     """
 
     user_id = token["identity"]

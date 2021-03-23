@@ -13,9 +13,21 @@ def router():
     """ Add URL from blueprints to application """
     from controllers.user import user_page
     from controllers.item import item_page
+    from marshmallow import ValidationError
+    from sqlalchemy.exc import SQLAlchemyError
 
     app.register_blueprint(item_page)
     app.register_blueprint(user_page)
+
+    @app.errorhandler(ValidationError)
+    def validation_handler(e):
+        """Handle validation error"""
+        return str(e), 400
+
+    @app.errorhandler(SQLAlchemyError)
+    def validation_handler(e):
+        """Handle sqlalchemy error"""
+        return {"msg": "An error occurred in database!"}, 500
 
 
 app.config["ENV"] = os.environ["ENV"]

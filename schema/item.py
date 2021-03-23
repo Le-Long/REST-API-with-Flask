@@ -1,9 +1,10 @@
 from marshmallow import Schema, fields, post_load, post_dump, ValidationError
+
 from models.item import CategoryModel
 
 
 class ItemSchema(Schema):
-    """ Schema used to transform an item object to json """
+    """Schema used to transform an item object to json"""
     id = fields.Int()
     name = fields.Str()
     price = fields.Float()
@@ -14,12 +15,12 @@ class ItemSchema(Schema):
     def get_category(self, info, **kwargs):
         category = CategoryModel.find_by_id(info["category_id"])
         del info["category_id"]
-        info["category"] = category.name
+        info["category"] = category.jsonify()
         return info
 
 
 class GetItemListSchema(Schema):
-    """ Schema to validate info to get a list of items """
+    """Schema to validate info to get a list of items"""
     name = fields.Str(missing="")
     page = fields.Int(missing=1)
     per_page = fields.Int(missing=5)

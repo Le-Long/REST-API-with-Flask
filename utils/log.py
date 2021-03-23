@@ -3,7 +3,6 @@ import traceback
 from functools import wraps
 
 from flask import request
-from sqlalchemy.exc import SQLAlchemyError
 
 for handler in logging.root.handlers[:]:
     logging.root.removeHandler(handler)
@@ -71,10 +70,7 @@ def log_and_capture(endpoint, code=400):
             except Exception as e:
                 # If there is an error, we need its msg and traceback
                 msg = str(e)
-                if e is SQLAlchemyError:
-                    result = {"msg": "An error occurred creating the item!"}, 500
-                else:
-                    result = {"error": msg}, code
+                result = f(*args, **kwargs)
                 trace = traceback.format_exc()
                 log_obj = get_log(f, endpoint, msg, trace=trace)
             logging.info(log_obj)

@@ -1,7 +1,7 @@
 import datetime
 
 from flask import request, Blueprint
-from marshmallow import ValidationError
+
 import jwt
 
 from schema.user import ValidateUserInputSchema
@@ -14,12 +14,9 @@ user_page = Blueprint("user_page", __name__)
 
 
 def validate_input():
-    """ Validate user's information on the request body """
+    """Validate user's information on the request body"""
     auth_schema = ValidateUserInputSchema()
-    try:
-        data = auth_schema.load(request.json)
-    except ValidationError as e:
-        raise e
+    data = auth_schema.load(request.json)
     return data
 
 
@@ -32,16 +29,14 @@ def post():
     Message: dictionary
         format {"msg" or the error key: The message}
     Status code: int
-        400 if the request is not valid,
-        200 if OK
+        400 if the request is not valid
+        201 if OK
     """
 
     # Validate information of the new user
     data = validate_input()
-    if data["username"] == "" or data["password"] == "":
-        return {"msg": "Please fill both username and password."}, 400
     if UserModel.find_by_username(data["username"]):
-        return {"msg": "An user with that username already exists."}, 400
+        return {"msg": "An user with that username already exists"}, 200
 
     # Create a new user
     user = UserModel(**data)
@@ -61,7 +56,6 @@ def post():
     Message if error: dictionary
         format {"msg" or the error key: The error message}
     Status code: int
-        400 if the request is not valid,
         401 if the request is unauthorized
         200 if OK
     """
