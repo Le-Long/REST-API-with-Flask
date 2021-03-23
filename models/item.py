@@ -59,7 +59,7 @@ class ItemModel(Base):
             start = 0  # if start is out of range, we set it to 0
         if start == 0:
             prev_page = False
-        if page*perpage > len(query.all()):
+        if page*perpage >= len(query.all()):
             next_page = False
         return query.slice(start, page*perpage).all(), prev_page, next_page
 

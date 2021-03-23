@@ -153,7 +153,7 @@ def get():
     Item if success: JSON
         format [
                 {"id":int,
-                "name": str start with <prefix>,
+                "name": str contains <name.,
                 "price":float,
                 "category_id":int,
                 "user_id":int},

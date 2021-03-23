@@ -27,6 +27,8 @@ def test_item_list_no_para_success(client):
     rv = client.get("/items")
     data = rv.get_json()
     assert data["items"] != []
+    assert data["prev_page"] is False
+    assert data["next_page"] is False
 
 
 def test_item_list_with_name_success(client):
@@ -48,6 +50,7 @@ def test_item_list_with_name_failure(client):
 def test_pagination_success(client):
     """ Make sure getting an item list with custom pagination works """
     add_item(client)
+    add_item(client)
     rv = client.get("/items?page=1")
     data = rv.get_json()
     assert data["items"][0]["name"] == "book"
@@ -56,9 +59,15 @@ def test_pagination_success(client):
     data = rv.get_json()
     assert data["items"][0]["name"] == "book"
 
-    rv = client.get("/items?page=1&name=book&per_page=20")
+    rv = client.get("/items?page=1&name=book&per_page=1")
     data = rv.get_json()
-    assert data["items"][0]["name"] == "book"
+    assert data["next_page"] is True
+    assert data["prev_page"] is False
+
+    rv = client.get("/items?page=2&name=book&per_page=1")
+    data = rv.get_json()
+    assert data["prev_page"] is True
+    assert data["next_page"] is False
 
 
 def test_pagination_page_not_positive_failure(client):
