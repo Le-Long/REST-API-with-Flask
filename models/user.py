@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
+from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from app import Base, Session
@@ -23,11 +24,12 @@ class UserModel(Base):
         self.password = generate_password_hash(password)
 
     def save_to_db(self):
-        session.add(self)
         try:
+            session.add(self)
             session.commit()
-        except:
+        except SQLAlchemyError as e:
             session.rollback()
+            raise e
 
     @classmethod
     def clear_db(cls):
@@ -35,8 +37,9 @@ class UserModel(Base):
             session.delete(user)
         try:
             session.commit()
-        except:
+        except SQLAlchemyError as e:
             session.rollback()
+            raise e
 
     @classmethod
     def find_by_username(cls, username):

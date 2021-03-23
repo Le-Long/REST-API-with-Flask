@@ -46,6 +46,7 @@ def post():
     # Create a new user
     user = UserModel(**data)
     user.save_to_db()
+
     return {"msg": "User created successfully."}, 201
 
 

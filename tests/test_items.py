@@ -157,7 +157,7 @@ def test_edit_item_invalid_info_failure(client):
         "category": "stationary"
     })
     print(rv.data)
-    assert b"'Missing data for required field!" in rv.data
+    assert b"'Missing data for required field." in rv.data
 
 
 def test_delete_item_success(client):

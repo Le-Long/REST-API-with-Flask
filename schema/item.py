@@ -1,4 +1,5 @@
-from marshmallow import Schema, fields, post_load, ValidationError
+from marshmallow import Schema, fields, post_load, post_dump, ValidationError
+from models.item import CategoryModel
 
 
 class ItemSchema(Schema):
@@ -8,6 +9,13 @@ class ItemSchema(Schema):
     price = fields.Float()
     category_id = fields.Int()
     user_id = fields.Int()
+
+    @post_dump()
+    def get_category(self, info, **kwargs):
+        category = CategoryModel.find_by_id(info["category_id"])
+        del info["category_id"]
+        info["category"] = category.name
+        return info
 
 
 class GetItemListSchema(Schema):

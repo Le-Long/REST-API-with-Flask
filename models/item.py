@@ -1,5 +1,6 @@
 from sqlalchemy import Column, String, Integer, Float, ForeignKey
 from sqlalchemy.orm import relationship
+from sqlalchemy.exc import SQLAlchemyError
 
 from app import Base, Session
 
@@ -36,9 +37,13 @@ class ItemModel(Base):
 
     @classmethod
     def clear_db(cls):
-        for item in session.query(cls).all():
-            session.delete(item)
-        session.commit()
+        try:
+            for item in session.query(cls).all():
+                session.delete(item)
+            session.commit()
+        except SQLAlchemyError as e:
+            session.rollback()
+            raise e
 
     @classmethod
     def query_with_part_of_name(cls, name):
@@ -48,23 +53,41 @@ class ItemModel(Base):
     def pagination(cls, name, perpage, page):
         query = cls.query_with_part_of_name(name)
         start = (page - 1) * perpage  # start is the index of the first object of a page
+        prev_page = True
+        next_page = True
         if query.count() < start:
             start = 0  # if start is out of range, we set it to 0
-        return query.slice(start, page*perpage).all()
+        if start == 0:
+            prev_page = False
+        if page*perpage > len(query.all()):
+            next_page = False
+        return query.slice(start, page*perpage).all(), prev_page, next_page
 
     def save_to_db(self):
-        session.add(self)
-        session.commit()
+        try:
+            session.add(self)
+            session.commit()
+        except SQLAlchemyError as e:
+            session.rollback()
+            raise e
 
     def update_to_db(self, name, price, category):
         self.name = name
         self.price = price
         self.category_id = category
-        session.commit()
+        try:
+            session.commit()
+        except SQLAlchemyError as e:
+            session.rollback()
+            raise e
 
     def delete_from_db(self):
-        session.delete(self)
-        session.commit()
+        try:
+            session.delete(self)
+            session.commit()
+        except SQLAlchemyError as e:
+            session.rollback()
+            raise e
 
 
 class CategoryModel(Base):
@@ -84,6 +107,14 @@ class CategoryModel(Base):
     def find_by_name(cls, name):
         return session.query(cls).filter_by(name=name).first()
 
+    @classmethod
+    def find_by_id(cls, _id):
+        return session.query(cls).get(_id)
+
     def save_to_db(self):
-        session.add(self)
-        session.commit()
+        try:
+            session.add(self)
+            session.commit()
+        except SQLAlchemyError as e:
+            session.rollback()
+            raise e

@@ -48,13 +48,13 @@ def test_logout_success(client):
         "price": 20.0,
         "category": "stationary"
     })
-    assert b"Token has been revoked!" in rv.data
+    assert b"You has already logged out!" in rv.data
 
 
 def test_logout_not_yet_log_in_failure(client):
     """ Make sure user who logout need to login first """
     rv = client.post("/logout")
-    assert b"Missing Authorization header!" in rv.data
+    assert b"You need to log in first!" in rv.data
 
 
 def test_signup_success(client):

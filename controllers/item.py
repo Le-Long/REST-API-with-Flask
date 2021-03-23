@@ -1,5 +1,4 @@
 from flask import request, Blueprint
-from sqlalchemy.orm import exc
 from marshmallow.exceptions import ValidationError
 
 from models.item import ItemModel, CategoryModel
@@ -35,11 +34,11 @@ def get(id):
     Return:
     Item if success: JSON
         format {
-                “id”:int,
-                “name”: str,
-                “price”:float,
-                “category_id”:int,
-                "user_id”:int
+                "id":int,
+                "name": str,
+                "price":float,
+                "category_id":int,
+                "user_id":int
                 }
     Message if error: dictionary
         format {"msg": "Item not found!"}
@@ -84,10 +83,7 @@ def delete(id, **token):
         return {"msg": "Item not found!"}, 404
     if item.user_id != user_identity:
         return {"msg": "You need to be the owner!"}, 403
-    try:
-        item.delete_from_db()
-    except exc.ConcurrentModificationError:
-        return {"msg": "An error occurred deleting the item."}, 500
+    item.delete_from_db()
     return {"msg": "Item deleted!"}, 200
 
 
@@ -128,21 +124,17 @@ def put(id, **token):
     # Create a new category if necessary for the item
     category = CategoryModel.find_by_name(data["category"])
     if not category:
-        try:
-            category = CategoryModel(data["category"])
-            category.save_to_db()
-        except RuntimeError:
-            return {"msg": "An error occurred creating the category!"}, 500
+        category = CategoryModel(data["category"])
+        category.save_to_db()
+
     data["category"] = category.id
 
     # Only update an existing item
     if item:
         if item.user_id != user_identity:
             return {"msg": "You need to be the owner!"}, 403
-        try:
-            item.update_to_db(**data)
-        except exc.ConcurrentModificationError:
-            return {"msg": "An error occurred updating the item!"}, 500
+        item.update_to_db(**data)
+
     else:
         return {"msg": "Item not found!"}, 404
     return {"msg": "Item updated!"}, 200
@@ -160,11 +152,11 @@ def get():
     Return:
     Item if success: JSON
         format [
-                {“id”:int,
-                “name”: str start with <prefix>,
-                “price”:float,
-                “category_id”:int,
-                “user_id”:int},
+                {"id":int,
+                "name": str start with <prefix>,
+                "price":float,
+                "category_id":int,
+                "user_id":int},
                 ]
 
     Message if error: dictionary
@@ -178,14 +170,14 @@ def get():
     data = validate_input(request.args, GetItemListSchema)
 
     # Only get one page of items
-    if data:
-        pagination = ItemModel.pagination(data["name"], data["per_page"], data["page"])
-        if pagination:
-            return {"items": list(map(lambda x: item_schema.dump(x), pagination))}, 200
-        return {"items": []}, 200
-    return {"items": list(map(lambda x: item_schema.dump(x),
-                              ItemModel.query_with_part_of_name("").all())
-                          )}, 200
+    pagination, prev_page, next_page = ItemModel.pagination(data["name"],
+                                                            data["per_page"],
+                                                            data["page"])
+    if pagination:
+        return {"items": list(map(lambda x: item_schema.dump(x), pagination)),
+                "prev_page": prev_page,
+                "next_page": next_page}, 200
+    return {"items": [], "prev_page": False, "next_page": False}, 200
 
 
 @item_page.route("/items", methods=["POST"], endpoint="item_add")
@@ -203,11 +195,11 @@ def post(**token):
     Return:
     Item if success: JSON
         format {
-                “id”:int,
-                “name”: str,
-                “price”:float,
-                “category_id”:int,
-                “user_id”:int
+                "id":int,
+                "name": str,
+                "price":float,
+                "category_id":int,
+                "user_id":int
                 }
     Message if error: dictionary
         format {the error key: The error message}
@@ -225,17 +217,13 @@ def post(**token):
     # Create a new category if necessary for the new item
     category = CategoryModel.find_by_name(data["category"])
     if not category:
-        try:
-            category = CategoryModel(data["category"])
-            category.save_to_db()
-        except exc.ConcurrentModificationError:
-            return {"msg": "An error occurred creating the category!"}, 500
+        category = CategoryModel(data["category"])
+        category.save_to_db()
+
     data["category"] = category.id
 
     # Create the item
     item = ItemModel(**data, user=user_id)
-    try:
-        item.save_to_db()
-    except exc.ConcurrentModificationError:
-        return {"msg": "An error occurred creating the item!"}, 500
+    item.save_to_db()
+
     return item_schema.dump(item), 201
