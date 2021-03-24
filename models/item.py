@@ -50,18 +50,21 @@ class ItemModel(Base):
         return session.query(cls).filter(cls.name.contains(name))
 
     @classmethod
-    def pagination(cls, name, perpage, page):
+    def pagination(cls, name, per_page, page):
         query = cls.query_with_part_of_name(name)
-        start = (page - 1) * perpage  # start is the index of the first object of a page
+        start = (page - 1) * per_page  # start is the index of the first object of a page
+        end = page*per_page  # end is the index of the first object of the next page (if exists)
         prev_page = True
         next_page = True
-        if query.count() < start:
-            start = 0  # if start is out of range, we set it to 0
+        if query.count() <= start:
+            # if start is out of range, we only get the first page
+            start = 0
+            end = per_page
         if start == 0:
             prev_page = False
-        if page*perpage >= len(query.all()):
+        if end >= len(query.all()):
             next_page = False
-        return query.slice(start, page*perpage).all(), prev_page, next_page
+        return query.slice(start, end).all(), prev_page, next_page
 
     def save_to_db(self):
         try:

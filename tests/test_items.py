@@ -3,7 +3,7 @@ from tests.test_user import login, register
 
 
 def get_header(client):
-    rv = login(client, "admin", "12345")
+    rv = login(client, "admin", "Passw0rd")
     data = rv.get_json()
     token = data["access_token"]
     return {"Authorization": f"Bearer {token}"}
@@ -180,8 +180,8 @@ def test_delete_item_success(client):
 
 def test_delete_item_no_privilege_failure(client):
     """Make sure deleting an item needs authorization"""
-    register(client, "tester", "password")
-    rv = login(client, "tester", "password")
+    register(client, "tester", "Passw0rd")
+    rv = login(client, "tester", "Passw0rd")
     data = rv.get_json()
     new_token = data["access_token"]
     headers = {"Authorization": f"Bearer {new_token}"}

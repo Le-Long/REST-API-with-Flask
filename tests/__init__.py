@@ -16,6 +16,6 @@ def client():
             ItemModel.clear_db()
             UserModel.clear_db()
             if UserModel.find_by_username("admin") is None:
-                admin = UserModel("admin", "12345")
+                admin = UserModel("admin", "Passw0rd")
                 admin.save_to_db()
         yield client

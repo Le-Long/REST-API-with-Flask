@@ -49,15 +49,18 @@ def get_log(func, api, msg='', trace=''):
     }
 
 
-def log_and_capture(endpoint, code=400):
+def log_and_capture(endpoint):
     """A decorator used with any api calls for logging into a file
 
     Parameters
     ----------
     endpoint: string
         the name of the logged endpoint
-    code: int
-        code for return when meet error
+
+    Raises
+    ------
+    UnboundLocalError
+        If the log_obj can't be created.
     """
 
     def inner(f):
@@ -65,15 +68,16 @@ def log_and_capture(endpoint, code=400):
         def decorator(*args, **kwargs):
             try:
                 # If everything alright, we do not need traceback
-                result = f(*args, **kwargs)
                 log_obj = get_log(f, endpoint)
+                result = f(*args, **kwargs)
             except Exception as e:
                 # If there is an error, we need its msg and traceback
                 msg = str(e)
-                result = f(*args, **kwargs)
                 trace = traceback.format_exc()
                 log_obj = get_log(f, endpoint, msg, trace=trace)
-            logging.info(log_obj)
+                result = f(*args, **kwargs)
+            finally:
+                logging.info(log_obj)
             return result
         return decorator
     return inner
