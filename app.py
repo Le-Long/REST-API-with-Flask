@@ -25,12 +25,12 @@ def router():
         return str(e), 400
 
     @app.errorhandler(SQLAlchemyError)
-    def sqlalchemy_handler():
+    def sqlalchemy_handler(e):
         """Handle sqlalchemy error"""
         return {"msg": "An error occurred in database!"}, 500
 
     @app.errorhandler(UnboundLocalError)
-    def log_handler():
+    def log_handler(e):
         """Handle logging error"""
         return {"msg": "An error occurred in log!"}, 500
 
