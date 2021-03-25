@@ -61,10 +61,14 @@ def post():
 
     data = validate_user_input()
 
-    # Return an access token with the user id and the time the token was created so that we can distinguish them
+    # Return an access token with the user id and
+    # the time the token was created so that we can distinguish them
     user = UserModel.find_by_username(data["username"])
     if user and user.verify_password(data["password"]):
-        access_token = jwt.encode({"identity": user.id, "iat": datetime.datetime.utcnow()}, key, algorithm="HS256")
+        now = datetime.datetime.utcnow()
+        access_token = jwt.encode({"identity": user.id,
+                                   "exp": now + datetime.timedelta(minutes=30)},
+                                  key, algorithm="HS256")
         return {"access_token": access_token}, 200
     return {"msg": "Please register first!"}, 401
 
@@ -87,5 +91,5 @@ def post(**token):
     """
 
     # Handle the request of signing out by adding the present token to block list
-    BLOCKLIST.add(str(token["iat"]))
+    BLOCKLIST.add(token["exp"])
     return {"msg": "Successfully logged out!"}, 200

@@ -1,4 +1,5 @@
 import functools
+import datetime
 
 from flask import request
 import jwt
@@ -13,6 +14,7 @@ def check_if_token_in_blocklist(jwt_payload):
     """Check if a user has already logged out or not
 
     If the user has already logged out, the token will be recorded in a block list.
+    If a token in the block list has already expired, remove it.
 
     Parameters
     ----------
@@ -25,7 +27,14 @@ def check_if_token_in_blocklist(jwt_payload):
         whether a user has already logged out or not
     """
 
-    return str(jwt_payload["iat"]) in BLOCKLIST
+    blocked = False
+    now = datetime.datetime.utcnow()
+    for token in BLOCKLIST:
+        if datetime.datetime.fromtimestamp(token) < now:
+            BLOCKLIST.remove(token)
+        if token == jwt_payload["exp"]:
+            blocked = True
+    return blocked
 
 
 def jwt_required(f):
