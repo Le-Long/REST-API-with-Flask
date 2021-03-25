@@ -1,3 +1,4 @@
+from tests import client
 from tests.test_user import login, register
 
 
