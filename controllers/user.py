@@ -67,7 +67,7 @@ def post():
     if user and user.verify_password(data["password"]):
         now = datetime.datetime.utcnow()
         access_token = jwt.encode({"identity": user.id,
-                                   "exp": now + datetime.timedelta(seconds=30)},
+                                   "exp": now + datetime.timedelta(minutes=30)},
                                   key, algorithm="HS256")
         return {"access_token": access_token}, 200
     return {"msg": "Please register first!"}, 401
