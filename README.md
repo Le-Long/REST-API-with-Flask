@@ -35,7 +35,7 @@ The server will start on http://127.0.0.1:5000
 
 ## Testing
 
-Change directory to the project and then you can test it
+Change ENV=test in your environment and then you can test it
 
 ```bash
 python3 -m pytest
