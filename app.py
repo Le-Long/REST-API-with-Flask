@@ -35,13 +35,17 @@ def router():
         return {"msg": "An error occurred in log!"}, 500
 
 
-app.config["ENV"] = os.environ["ENV"]
-# Change environment according to the ENV param
-if os.environ["ENV"] == "prod":
-    app.config.from_object("config.production.ProductionConfig")
-elif os.environ["ENV"] == "test":
-    app.config.from_object("config.testing.TestingConfig")
+if "ENV" in os.environ:
+    # Change environment according to the ENV param
+    app.config["ENV"] = os.environ["ENV"]
+    if app.config["ENV"] == "prod":
+        app.config.from_object("config.production.ProductionConfig")
+    elif app.config["ENV"] == "test":
+        app.config.from_object("config.testing.TestingConfig")
+    else:
+        app.config.from_object("config.development.DevelopmentConfig")
 else:
+    app.config["ENV"] = "dev"
     app.config.from_object("config.development.DevelopmentConfig")
 
 # Create a session maker connected to database and a base class for all models

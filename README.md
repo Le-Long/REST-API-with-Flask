@@ -14,7 +14,7 @@ git clone --branch master https://github.com/Le-Long/REST-API-with-Flask.git
 
 It is recommended that you create a virtual environment and activate it first. 
 
-Then use the package manager [pip](https://pip.pypa.io/en/stable/) to install requirements.
+Then go to the project directory to use the package manager [pip](https://pip.pypa.io/en/stable/) to install requirements.
 
 ```bash
 python3 -m pip install -r requirements.txt
@@ -26,7 +26,7 @@ depends on which environment you use. Then run MySQL and create a database named
 <!-- USAGE -->
 ## Running
 
-Afterward, you can go to the project directory to run
+Afterward, you can run
 
 ```bash
 python3 app.py
