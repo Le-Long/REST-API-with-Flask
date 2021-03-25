@@ -37,9 +37,9 @@ def router():
 
 app.config["ENV"] = os.environ["ENV"]
 # Change environment according to the ENV param
-if app.config["ENV"] == "prod":
+if os.environ["ENV"] == "prod":
     app.config.from_object("config.production.ProductionConfig")
-elif app.config["ENV"] == "test":
+elif os.environ["ENV"] == "test":
     app.config.from_object("config.testing.TestingConfig")
 else:
     app.config.from_object("config.development.DevelopmentConfig")

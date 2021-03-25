@@ -1,5 +1,6 @@
 import functools
 import datetime
+from calendar import timegm
 
 from flask import request
 import jwt
@@ -28,9 +29,9 @@ def check_if_token_in_blocklist(jwt_payload):
     """
 
     blocked = False
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.utcnow().utctimetuple()
     for token in BLOCKLIST:
-        if datetime.datetime.fromtimestamp(token) < now:
+        if token < timegm(now):
             BLOCKLIST.remove(token)
         if token == jwt_payload["exp"]:
             blocked = True

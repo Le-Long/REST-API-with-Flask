@@ -9,7 +9,7 @@ For the design document, see [kiot](https://docs.google.com/document/d/1BMIo-5bP
 Download the project from github or clone it with git
 
 ```bash
-git clone https://github.com/Le-Long/REST-API-with-Flask.git
+git clone --branch master https://github.com/Le-Long/REST-API-with-Flask.git
 ```
 
 It is recommended that you create a virtual environment and activate it first. 
@@ -17,7 +17,7 @@ It is recommended that you create a virtual environment and activate it first.
 Then use the package manager [pip](https://pip.pypa.io/en/stable/) to install requirements.
 
 ```bash
-pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 ```
 
 You need to change the SQLALCHEMY_DATABASE_URI to your database URI in one of the file in directory config,
@@ -29,7 +29,7 @@ depends on which environment you use. Then run MySQL and create a database named
 Afterward, you can go to the project directory to run
 
 ```bash
-python app.py
+python3 app.py
 ```
 The server will start on http://127.0.0.1:5000
 
