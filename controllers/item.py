@@ -11,7 +11,7 @@ item_schema = ItemSchema()
 item_page = Blueprint("item_page", __name__)
 
 
-def validate_input(param, schema):
+def validate_item_input(param, schema):
     """Validate information on the request"""
     schema_obj = schema()
     data = schema_obj.load(param)
@@ -65,7 +65,7 @@ def delete(id, **token):
     Message if success: dictionary
         format {"msg": "Item deleted!"}
     Message if error: dictionary
-        format {"msg" or the error key: The error message}
+        format {"msg": The error message}
     Status code: int
         200 if OK
         403 if user is not the owner
@@ -100,7 +100,7 @@ def put(id, **token):
     Message if success: dictionary
         format {"msg": "Item updated!"}
     Message if error: dictionary
-        format {"msg" or the error key: The error message}
+        format {"msg": The error message}
     Status code: int
         200 if OK
         403 if user is not the owner
@@ -112,7 +112,7 @@ def put(id, **token):
     item = ItemModel.find_by_id(id)
 
     # Validate information on the request body
-    data = validate_input(request.json, ItemInputSchema)
+    data = validate_item_input(request.json, ItemInputSchema)
 
     # Create a new category if necessary for the item
     category = CategoryModel.find_by_name(data["category"])
@@ -143,23 +143,24 @@ def get():
         the index of the item user want to get
 
     Return:
-    Item if success: JSON
-        format [
-                {"id":int,
-                "name": str contains <name.,
-                "price":float,
-                "category_id":int,
-                "user_id":int},
-                ]
-
-    Message if error: dictionary
-        format {the error key: The error message}
+    Item list: JSON
+        format {"items":
+                    [
+                    {"id":int,
+                    "name": str contains <name>,
+                    "price":float,
+                    "category_id":int,
+                    "user_id":int},
+                    ],
+                "prev_page": bool,
+                "next_page": bool
+                }
     Status code: int
         200 if OK
     """
 
     # Validate information on the query string
-    data = validate_input(request.args, GetItemListSchema)
+    data = validate_item_input(request.args, GetItemListSchema)
 
     # Only get one page of items
     pagination, prev_page, next_page = ItemModel.pagination(data["name"],
@@ -193,8 +194,6 @@ def post(**token):
                 "category_id":int,
                 "user_id":int
                 }
-    Message if error: dictionary
-        format {the error key: The error message}
     Status code: int
         201 if OK
     """
@@ -202,7 +201,7 @@ def post(**token):
     user_id = token["identity"]
 
     # Validate information on the request body
-    data = validate_input(request.json, ItemInputSchema)
+    data = validate_item_input(request.json, ItemInputSchema)
 
     # Create a new category if necessary for the new item
     category = CategoryModel.find_by_name(data["category"])

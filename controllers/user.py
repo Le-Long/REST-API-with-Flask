@@ -1,7 +1,6 @@
 import datetime
 
 from flask import request, Blueprint
-
 import jwt
 
 from schema.user import ValidateUserInputSchema
@@ -13,7 +12,7 @@ from models.user import UserModel
 user_page = Blueprint("user_page", __name__)
 
 
-def validate_input():
+def validate_user_input():
     """Validate user's information on the request body"""
     auth_schema = ValidateUserInputSchema()
     data = auth_schema.load(request.json)
@@ -27,14 +26,14 @@ def post():
 
     Return:
     Message: dictionary
-        format {"msg" or the error key: The message}
+        format {"msg": The message}
     Status code: int
         400 if the request is not valid
         201 if OK
     """
 
     # Validate information of the new user
-    data = validate_input()
+    data = validate_user_input()
     if UserModel.find_by_username(data["username"]):
         return {"msg": "An user with that username already exists"}, 200
 
@@ -54,13 +53,13 @@ def post():
     Access token if success: dictionary
         format {"access_token": The token}
     Message if error: dictionary
-        format {"msg" or the error key: The error message}
+        format {"msg": The error message}
     Status code: int
         401 if the request is unauthorized
         200 if OK
     """
 
-    data = validate_input()
+    data = validate_user_input()
 
     # Return an access token with the user id and the time the token was created so that we can distinguish them
     user = UserModel.find_by_username(data["username"])

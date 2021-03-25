@@ -77,3 +77,10 @@ def test_signup_info_not_fill_failure(client):
 
     rv = register(client, "tester", "")
     assert b"Length must be between 5 and 20." in rv.data
+
+
+def test_signup_password_invalid_failure(client):
+    """Make sure register only create an user with valid password"""
+    rv = register(client, "tester", "password")
+    assert b"Must contain at least one lowercase letter, " \
+           b"one uppercase letter and one digit." in rv.data

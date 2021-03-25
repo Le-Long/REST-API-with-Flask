@@ -8,7 +8,8 @@ def validate_password(password):
         raise ValidationError("Length must be between 5 and 20.")
     if not re.match(r'^(?=.*[\d])(?=.*[A-Z])(?=.*[a-z])', password):
         raise ValidationError(
-            "Must contain at least one lowercase letter, one uppercase letter and one digit.")
+            "Must contain at least one lowercase letter, "
+            "one uppercase letter and one digit.")
 
 
 class ValidateUserInputSchema(Schema):

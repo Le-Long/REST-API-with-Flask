@@ -15,7 +15,8 @@ class ItemModel(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(80))
     price = Column(Float)
-    category_id = Column(Integer, ForeignKey("categories.id", ondelete="SET NULL"))
+    category_id = Column(Integer, ForeignKey("categories.id",
+                                             ondelete="SET NULL"))
     user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"))
 
     category = relationship("CategoryModel")
@@ -52,8 +53,12 @@ class ItemModel(Base):
     @classmethod
     def pagination(cls, name, per_page, page):
         query = cls.query_with_part_of_name(name)
-        start = (page - 1) * per_page  # start is the index of the first object of a page
-        end = page*per_page  # end is the index of the first object of the next page (if exists)
+
+        # start is the index of the first object of a page
+        start = (page - 1) * per_page
+        # end is the index of the first object of the next page (if exists)
+        end = page * per_page
+
         prev_page = True
         next_page = True
         if query.count() <= start:
@@ -114,7 +119,7 @@ class CategoryModel(Base):
     def find_by_id(cls, _id):
         return session.query(cls).get(_id)
 
-    def jsonify(self):
+    def serialize(self):
         return {"id": self.id, "name": self.name}
 
     def save_to_db(self):

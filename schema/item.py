@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields, post_load, post_dump, ValidationError
+from marshmallow import Schema, fields, post_load, post_dump, validate, ValidationError
 
 from models.item import CategoryModel
 
@@ -15,7 +15,7 @@ class ItemSchema(Schema):
     def get_category(self, info, **kwargs):
         category = CategoryModel.find_by_id(info["category_id"])
         del info["category_id"]
-        info["category"] = category.jsonify()
+        info["category"] = category.serialize()
         return info
 
 
@@ -37,6 +37,6 @@ class GetItemListSchema(Schema):
 
 class ItemInputSchema(Schema):
     """ Schema to validate info to create an item object """
-    name = fields.Str(required=True)
+    name = fields.Str(required=True, validate=validate.Length(max=80))
     price = fields.Float(required=True)
     category = fields.Str(required=True)
