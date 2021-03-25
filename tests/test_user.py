@@ -1,4 +1,3 @@
-from tests import client
 
 
 def login(client, username, password):

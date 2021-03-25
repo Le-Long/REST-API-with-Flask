@@ -38,7 +38,7 @@ The server will start on http://127.0.0.1:5000
 Change directory to the project and then you can test it
 
 ```bash
-pytest
+python3 -m pytest
 ```
 <!-- LICENSE -->
 ## License
