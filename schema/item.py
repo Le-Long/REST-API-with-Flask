@@ -1,22 +1,15 @@
-from marshmallow import Schema, fields, post_load, post_dump, validate, ValidationError
+from marshmallow import Schema, fields, post_load, validate, ValidationError
 
-from models.item import CategoryModel
+from schema.category import CategorySchema
 
 
 class ItemSchema(Schema):
-    """Schema used to transform an item object to json"""
+    """Schema used to transform an item object to a dictionary"""
     id = fields.Int()
-    name = fields.Str()
-    price = fields.Float()
-    category_id = fields.Int()
+    name = fields.Str(required=True, validate=validate.Length(max=80))
+    price = fields.Float(required=True)
+    category = fields.Nested(CategorySchema, only=("name",))
     user_id = fields.Int()
-
-    @post_dump()
-    def get_category(self, info, **kwargs):
-        category = CategoryModel.find_by_id(info["category_id"])
-        del info["category_id"]
-        info["category"] = category.serialize()
-        return info
 
 
 class GetItemListSchema(Schema):
@@ -33,10 +26,3 @@ class GetItemListSchema(Schema):
         if data["per_page"] < 1:
             raise ValidationError("The number of items per page has to be positive.")
         return data
-
-
-class ItemInputSchema(Schema):
-    """ Schema to validate info to create an item object """
-    name = fields.Str(required=True, validate=validate.Length(max=80))
-    price = fields.Float(required=True)
-    category = fields.Str(required=True)

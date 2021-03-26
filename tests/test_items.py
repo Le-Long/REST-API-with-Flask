@@ -14,7 +14,7 @@ def add_item(client):
     return client.post("/items", headers=headers, json={
         "name": "book",
         "price": 20.0,
-        "category": "stationary"
+        "category": {"name": "stationary"}
     })
 
 
@@ -27,8 +27,8 @@ def test_item_list_no_para_success(client):
     rv = client.get("/items")
     data = rv.get_json()
     assert data["items"] != []
-    assert data["prev_page"] is False
-    assert data["next_page"] is False
+    assert data["number_of_page"] == 1
+    assert data["current_page"] == 1
 
 
 def test_item_list_with_name_success(client):
@@ -57,17 +57,18 @@ def test_pagination_success(client):
 
     rv = client.get("/items?page=213&name=book")
     data = rv.get_json()
-    assert data["items"][0]["name"] == "book"
+    assert data["items"] == []
+    assert data["number_of_page"] == 1
 
     rv = client.get("/items?page=1&name=book&per_page=1")
     data = rv.get_json()
-    assert data["next_page"] is True
-    assert data["prev_page"] is False
+    assert data["number_of_page"] == 2
+    assert data["current_page"] == 1
 
     rv = client.get("/items?page=2&name=book&per_page=1")
     data = rv.get_json()
-    assert data["prev_page"] is True
-    assert data["next_page"] is False
+    assert data["current_page"] == 2
+    assert data["number_of_page"] == 2
 
 
 def test_pagination_page_not_positive_failure(client):
@@ -104,7 +105,7 @@ def test_add_item_invalid_info_failure(client):
     rv = client.post("/items", headers=headers, json={
         "name": "book",
         "price": "abc",
-        "category": "stationary"
+        "category": {"name": "stationary"}
     })
     assert b"Not a valid number." in rv.data
 
@@ -134,7 +135,7 @@ def test_edit_item_success(client):
     rv = client.put(f"/items/{id}", headers=headers, json={
         "name": "book",
         "price": 19,
-        "category": "stationary"
+        "category": {"name": "stationary"}
     })
     info = rv.get_json()
     assert info["msg"] == "Item updated!"
@@ -151,7 +152,7 @@ def test_edit_item_no_item_failure(client):
     rv = client.put(f"/items/{id + 1}", headers=headers, json={
         "name": "book",
         "price": 19,
-        "category": "stationary"
+        "category": {"name": "stationary"}
     })
     info = rv.get_json()
     assert info["msg"] == "Item not found!"
@@ -163,7 +164,7 @@ def test_edit_item_invalid_info_failure(client):
     id = add_item(client).get_json()["id"]
     rv = client.put(f"/items/{id}", headers=headers, json={
         "name": "book",
-        "category": "stationary"
+        "category": {"name": "stationary"}
     })
     print(rv.data)
     assert b"'Missing data for required field." in rv.data

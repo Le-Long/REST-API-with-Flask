@@ -29,7 +29,7 @@ def test_login_success(client):
     assert b"Successfully logged out!" in rv.data
 
 
-def test_login_no_account_failure(client):
+def test_login_with_account_not_existing_failure(client):
     """Make sure login only works with existing account"""
     rv = login(client, "wrongname", "Passw0rd")
     assert b"Please register first!" in rv.data
@@ -74,6 +74,9 @@ def test_signup_info_not_fill_failure(client):
     """Make sure register can't create an user without username or password"""
     rv = register(client, "", "12345Hn")
     assert b"Length must be between 1 and 20." in rv.data
+
+    rv = register(client, "tester", "123456789123456789Hnm")
+    assert b"Length must be between 5 and 20." in rv.data
 
     rv = register(client, "tester", "")
     assert b"Length must be between 5 and 20." in rv.data

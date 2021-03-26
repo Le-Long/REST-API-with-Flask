@@ -31,11 +31,10 @@ def post():
         400 if the request is not valid
         201 if OK
     """
-
     # Validate information of the new user
     data = validate_user_input()
     if UserModel.find_by_username(data["username"]):
-        return {"msg": "An user with that username already exists"}, 200
+        return {"msg": "An user with that username already exists."}, 400
 
     # Create a new user
     user = UserModel(**data)

@@ -1,6 +1,6 @@
 import pytest
 
-from app import app, Base, engine, router
+from app import app, Base, engine, register_blueprints
 from models.user import UserModel
 from models.item import ItemModel
 
@@ -8,7 +8,7 @@ from models.item import ItemModel
 @pytest.fixture
 def client():
     """Create a database in the application context for testing"""
-    router()
+    register_blueprints()
 
     with app.test_client() as client:
         with app.app_context():

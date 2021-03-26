@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Boolean, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -14,14 +14,16 @@ class UserModel(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
-    username = Column(String(20), unique=True)
-    password = Column(String(200))
+    username = Column(String(20), nullable=False)
+    hashed_password = Column(String(200), nullable=False)
+    not_in_use = Column(Boolean)
 
     item = relationship("ItemModel")
 
     def __init__(self, username, password):
         self.username = username
-        self.password = generate_password_hash(password)
+        self.hashed_password = generate_password_hash(password)
+        self.not_in_use = False
 
     def save_to_db(self):
         try:
@@ -33,8 +35,9 @@ class UserModel(Base):
 
     @classmethod
     def clear_db(cls):
+        # This method is for tests only
         for user in session.query(cls).all():
-            session.delete(user)
+            user.not_in_use = True
         try:
             session.commit()
         except SQLAlchemyError as e:
@@ -43,11 +46,15 @@ class UserModel(Base):
 
     @classmethod
     def find_by_username(cls, username):
-        return session.query(cls).filter_by(username=username).first()
+        return session.query(cls).filter_by(not_in_use=False, username=username).one_or_none()
 
     @classmethod
     def find_by_id(cls, _id):
-        return session.query(cls).get(_id)
+        user = session.query(cls).get(_id)
+        if user:
+            if user.not_in_use:
+                return None
+        return user
 
-    def verify_password(self, pwd):
-        return check_password_hash(self.password, pwd)
+    def verify_password(self, password):
+        return check_password_hash(self.hashed_password, password)

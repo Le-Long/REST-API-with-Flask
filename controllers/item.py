@@ -1,7 +1,8 @@
 from flask import request, Blueprint
 
-from models.item import ItemModel, CategoryModel
-from schema.item import ItemSchema, ItemInputSchema, GetItemListSchema
+from models.item import ItemModel
+from models.category import CategoryModel
+from schema.item import ItemSchema, GetItemListSchema
 from utils.log import log_and_capture
 from utils.auth import jwt_required
 
@@ -25,16 +26,16 @@ def get(id):
 
     Arguments:
     id: int
-        the index of the item user want to get
+        the identity of the item
 
     Return:
     Item if success: JSON
         format {
-                "id":int,
+                "id": int,
                 "name": str,
-                "price":float,
-                "category_id":int,
-                "user_id":int
+                "price": float,
+                "category_id": int,
+                "user_id": int
                 }
     Message if error: dictionary
         format {"msg": "Item not found!"}
@@ -57,7 +58,7 @@ def delete(id, **token):
 
     Arguments:
     id: int
-        the index of the item user want to update
+        the index of the item user want to delete
     Token: dictionary
         format {"identity": user id, "iat": the time the token was created}
 
@@ -112,20 +113,20 @@ def put(id, **token):
     item = ItemModel.find_by_id(id)
 
     # Validate information on the request body
-    data = validate_item_input(request.json, ItemInputSchema)
-
-    # Create a new category if necessary for the item
-    category = CategoryModel.find_by_name(data["category"])
-    if not category:
-        category = CategoryModel(data["category"])
-        category.save_to_db()
-
-    data["category"] = category.id
+    data = validate_item_input(request.json, ItemSchema)
 
     # Only update an existing item
     if item:
         if item.user_id != user_identity:
             return {"msg": "You need to be the owner!"}, 403
+
+        # Create a new category if necessary for the item
+        category = CategoryModel.find_by_name(data["category"]["name"])
+        if not category:
+            category = CategoryModel(data["category"]["name"])
+        category.save_to_db()
+
+        data["category"] = category.id
         item.update_to_db(**data)
 
     else:
@@ -163,14 +164,15 @@ def get():
     data = validate_item_input(request.args, GetItemListSchema)
 
     # Only get one page of items
-    pagination, prev_page, next_page = ItemModel.pagination(data["name"],
-                                                            data["per_page"],
-                                                            data["page"])
-    if pagination:
-        return {"items": list(map(lambda x: item_schema.dump(x), pagination)),
-                "prev_page": prev_page,
-                "next_page": next_page}, 200
-    return {"items": [], "prev_page": False, "next_page": False}, 200
+    query = ItemModel.query_with_condition(ItemModel.name.contains(data["name"]))
+    pagination, number_of_page = ItemModel.paginate(query, data["per_page"], data["page"])
+    if not pagination:
+        item_list = []
+    else:
+        item_list = list(map(lambda x: item_schema.dump(x), pagination))
+    return {"items": item_list,
+            "current_page": data["page"],
+            "number_of_page": number_of_page}, 200
 
 
 @item_page.route("/items", methods=["POST"], endpoint="item_add")
@@ -201,18 +203,18 @@ def post(**token):
     user_id = token["identity"]
 
     # Validate information on the request body
-    data = validate_item_input(request.json, ItemInputSchema)
+    data = validate_item_input(request.json, ItemSchema)
 
     # Create a new category if necessary for the new item
-    category = CategoryModel.find_by_name(data["category"])
+    category = CategoryModel.find_by_name(data["category"]["name"])
     if not category:
-        category = CategoryModel(data["category"])
+        category = CategoryModel(data["category"]["name"])
         category.save_to_db()
 
     data["category"] = category.id
 
     # Create the item
-    item = ItemModel(**data, user=user_id)
+    item = ItemModel(**data, user_id=user_id)
     item.save_to_db()
 
     return item_schema.dump(item), 201

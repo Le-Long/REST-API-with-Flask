@@ -1,4 +1,6 @@
-from sqlalchemy import Column, String, Integer, Float, ForeignKey
+import math
+
+from sqlalchemy import Column, Boolean, String, Integer, Float, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -13,63 +15,55 @@ class ItemModel(Base):
     __tablename__ = "items"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(80))
-    price = Column(Float)
-    category_id = Column(Integer, ForeignKey("categories.id",
-                                             ondelete="SET NULL"))
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"))
+    name = Column(String(80), nullable=False)
+    price = Column(Float, nullable=False)
+    not_in_use = Column(Boolean)
+    category_id = Column(Integer, ForeignKey("categories.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
 
     category = relationship("CategoryModel")
     user = relationship("UserModel")
 
-    def __init__(self, name, price, category, user):
+    def __init__(self, name, price, category, user_id):
         self.name = name
         self.price = price
         self.category_id = category
-        self.user_id = user
-
-    @classmethod
-    def find_by_name(cls, name):
-        return session.query(cls).filter_by(name=name).first()
+        self.user_id = user_id
+        self.not_in_use = False
 
     @classmethod
     def find_by_id(cls, _id):
-        return session.query(cls).get(_id)
+        item = session.query(cls).get(_id)
+        if item:
+            if item.not_in_use:
+                return None
+        return item
 
     @classmethod
     def clear_db(cls):
         try:
-            for item in session.query(cls).all():
-                session.delete(item)
+            for item in session.query(cls).filter_by(not_in_use=False).all():
+                item.not_in_use = True
             session.commit()
         except SQLAlchemyError as e:
             session.rollback()
             raise e
 
     @classmethod
-    def query_with_part_of_name(cls, name):
-        return session.query(cls).filter(cls.name.contains(name))
+    def query_with_condition(cls, condition):
+        return session.query(cls).filter_by(not_in_use=False).filter(condition)
 
     @classmethod
-    def pagination(cls, name, per_page, page):
-        query = cls.query_with_part_of_name(name)
-
+    def paginate(cls, query, per_page, page):
         # start is the index of the first object of a page
         start = (page - 1) * per_page
         # end is the index of the first object of the next page (if exists)
         end = page * per_page
-
-        prev_page = True
-        next_page = True
+        number_of_page = math.ceil(query.count()/per_page)
         if query.count() <= start:
             # if start is out of range, we only get the first page
-            start = 0
-            end = per_page
-        if start == 0:
-            prev_page = False
-        if end >= len(query.all()):
-            next_page = False
-        return query.slice(start, end).all(), prev_page, next_page
+            return None, 1
+        return query.slice(start, end).all(), number_of_page
 
     def save_to_db(self):
         try:
@@ -91,40 +85,7 @@ class ItemModel(Base):
 
     def delete_from_db(self):
         try:
-            session.delete(self)
-            session.commit()
-        except SQLAlchemyError as e:
-            session.rollback()
-            raise e
-
-
-class CategoryModel(Base):
-    """Interface for the categories database"""
-
-    __tablename__ = "categories"
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String(80))
-
-    items = relationship("ItemModel")
-
-    def __init__(self, name):
-        self.name = name
-
-    @classmethod
-    def find_by_name(cls, name):
-        return session.query(cls).filter_by(name=name).first()
-
-    @classmethod
-    def find_by_id(cls, _id):
-        return session.query(cls).get(_id)
-
-    def serialize(self):
-        return {"id": self.id, "name": self.name}
-
-    def save_to_db(self):
-        try:
-            session.add(self)
+            self.not_in_use = True
             session.commit()
         except SQLAlchemyError as e:
             session.rollback()

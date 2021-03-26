@@ -68,8 +68,8 @@ def log_and_capture(endpoint):
         def decorator(*args, **kwargs):
             try:
                 # If everything alright, we do not need traceback
-                log_obj = get_log(f, endpoint)
                 result = f(*args, **kwargs)
+                log_obj = get_log(f, endpoint)
             except Exception as e:
                 # If there is an error, we need its msg and traceback
                 msg = str(e)
